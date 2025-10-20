@@ -1,44 +1,74 @@
-export default function Portfolio({ data }) {
-  if (!data) return null;
+import { Box, Button, Tab } from "@mui/material";
+import { styles } from "../style";
+import React, { useState } from 'react';
+import TabContext from '@mui/lab/TabContext';
+import TabList from '@mui/lab/TabList';
+import TabPanel from '@mui/lab/TabPanel';
+export default function Portfolio({ code, setCode }) {
+  const [previewSrc, setPreviewSrc] = useState('');
+  const [currentTab, setCurrentTab] = useState('content');
 
+  React.useEffect(() => {
+    const srcDoc = `${code?.html}`;
+    setPreviewSrc(srcDoc);
+  }, [code]);
+
+  const handleCodeChange = (type, e) => {
+    if (e.type === "click") {
+      setCurrentTab(type);
+    } else {
+      setCode({ ...code, [type]: e.target.value });
+    }
+  };
+ const openInNewTab = () => {
+    const blob = new Blob([previewSrc], { type: "text/html" });
+    const url = URL.createObjectURL(blob);
+    window.open(url, "_blank");
+  };
   return (
-    <div className="p-8 mt-6 bg-white shadow rounded-xl w-full max-w-3xl">
-      <h1 className="text-3xl font-bold">{data.name}</h1>
-      <h2 className="text-xl text-blue-600 mb-4">{data.title}</h2>
-
-      {data.skills?.length > 0 && (
-        <section className="mt-4">
-          <h3 className="font-semibold text-lg">Skills</h3>
-          <ul className="list-disc pl-5 text-gray-700">
-            {data.skills.map((skill, i) => (
-              <li key={i}>{skill}</li>
-            ))}
-          </ul>
-        </section>
-      )}
-
-      {data.experience?.length > 0 && (
-        <section className="mt-4">
-          <h3 className="font-semibold text-lg">Experience</h3>
-          {data.experience.map((exp, i) => (
-            <p key={i}>
-              {exp.role} @ {exp.company} ({exp.years})
-            </p>
-          ))}
-        </section>
-      )}
-
-      {data.projects?.length > 0 && (
-        <section className="mt-4">
-          <h3 className="font-semibold text-lg">Projects</h3>
-          {data.projects.map((proj, i) => (
-            <div key={i} className="mb-2">
-              <p className="font-medium">{proj.title}</p>
-              <p className="text-sm text-gray-600">{proj.description}</p>
-            </div>
-          ))}
-        </section>
-      )}
-    </div>
+    <Box sx={{ width: '100%', typography: 'body1' }}>
+      <TabContext value={currentTab}>
+        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+          <TabList onChange={(e, type) => handleCodeChange(type, e)} aria-label="lab API tabs example">
+            <Tab label="Content" value="content" />
+            <Tab label="Preview" value="preview" />
+            <Tab label="Code" value="code" />
+          </TabList>
+        </Box>
+        <TabPanel value="content">
+          {/* <pre style={{ background: '#f5f5f7', padding: 16, borderRadius: 6 }}>
+            {JSON.stringify(code?.json, null, 2)}
+          </pre> */}
+          <textarea
+            rows={6}
+            placeholder="File Content"
+            value={code.content}
+            onChange={(e) => handleCodeChange('content', e)}
+            style={styles.textArea}
+          />
+        </TabPanel>
+        <TabPanel value="code">
+          <textarea
+            rows={6}
+            placeholder="HTML code"
+            value={code.html}
+            onChange={(e) => handleCodeChange('html', e)}
+            style={styles.textArea}
+          />
+        </TabPanel>
+        <TabPanel value="preview">
+          <Button onClick={openInNewTab}>Open Preview in New Tab</Button>
+          <iframe
+            title="Website Preview"
+            srcDoc={previewSrc}
+            style={styles.iframe}
+            sandbox="allow-scripts allow-same-origin"
+          />
+        </TabPanel>
+      </TabContext>
+    </Box>
   );
+
+
 }
+

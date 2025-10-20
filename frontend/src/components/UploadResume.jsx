@@ -1,40 +1,60 @@
 import { useState } from "react";
-import axios from "axios";
-
-export default function UploadResume({ onData }) {
+import { styles } from "../style";
+import { extractContent } from "../services/services";
+import { Button, CircularProgress } from "@mui/material";
+export default function UploadResume({ code, setCode }) {//{ onData }
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const handleUpload = async () => {
-    if (!file) return;
-    const formData = new FormData();
-    formData.append("file", file);
-    setLoading(true);
     try {
-      const res = await axios.post("http://localhost:8080/api/upload", formData);
-      onData(res.data);
+      if (!file) return;
+      setLoading(true);
+      let res = await extractContent(file);
+      console.log(res,"res")
+      if(res){
+        setCode({...code,content:res?.content});
+      }else{
+        setCode({...code,json:{}});
+      }
     } catch (err) {
-      console.log(err);
+      console.log(err,"error");
       alert("Upload failed");
     } finally {
       setLoading(false);
     }
   };
+  const handleFileUpload =(e) => {
+    const uploadedFile = e.target.files[0];
+    setFile(uploadedFile);
+    // const reader = new FileReader();
+    // reader.onload = (ev) => {
+    //   setCode({ ...code, html: ev.target.result });
+    // };
+    // reader.readAsText(uploadedFile);
+    // console.log(reader,"reader")
+  };
 
   return (
-    <div className="flex flex-col items-center gap-4 p-6 border rounded-xl shadow-md bg-white w-96">
+    <section style={styles.uploadSection}>
+      <h3 style={styles.uploadTitle}>Upload Option</h3>
       <input
         type="file"
-        onChange={(e) => setFile(e.target.files[0])}
-        className="p-2 border rounded w-full"
+        style={styles.fileInput}
+        onChange={handleFileUpload}
       />
-      <button
+       <Button
+        variant="contained"
+        color="primary"
         onClick={handleUpload}
+        style={styles.uploadBtn}
+        endIcon={loading ? <CircularProgress size={20} color="inherit" /> : null}
         disabled={!file || loading}
-        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full"
       >
         {loading ? "Uploading..." : "Upload Resume"}
-      </button>
-    </div>
+      </Button>
+      {/* <button style={styles.uploadBtn}disabled={!file || loading} onClick={handleUpload}> {loading ? "Uploading..." : "Upload Resume"}</button> */}
+      <span style={styles.fileName}>{file ? file.name : 'No file chosen'}</span>
+    </section>
   );
 }

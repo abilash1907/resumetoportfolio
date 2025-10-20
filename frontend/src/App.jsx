@@ -1,18 +1,25 @@
-import { useState } from "react";
-import UploadResume from "./components/UploadResume";
-import Portfolio from "./components/Portfolio";
+import { useState } from 'react';
+import NavBar from './components/NavBar';
+import UploadResume from './components/UploadResume';
+import Portfolio from './components/Portfolio';
+import { styles } from './style';
+const initialCode = {
+  html: '<h2>Hello World!</h2>',
+  preview: '',
+  content: ''
+};
 
 function App() {
-  const [resume, setResume] = useState(null);
-
+  // const [file, setFile] = useState(null);
+  const [code, setCode] = useState(initialCode);
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center p-8">
-      <h1 className="text-2xl font-bold mb-6">
-        Resume → Portfolio Converter
-      </h1>
-
-      <UploadResume onData={setResume} />
-      <Portfolio data={resume} />
+    <div style={styles.container}>
+      {/* Header */}
+      <NavBar/>
+      {/* Upload Option */}
+      <UploadResume code={code} setCode={setCode}/>
+      {/* Code Editor and Preview Section */}
+      <Portfolio code={code} setCode={setCode}/>
     </div>
   );
 }

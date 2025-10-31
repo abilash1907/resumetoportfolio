@@ -4,7 +4,7 @@ import UploadResume from './components/UploadResume';
 import Portfolio from './components/Portfolio';
 import { styles } from './style';
 const initialCode = {
-  html: '<h2>Hello World!</h2>',
+  html: '',
   preview: '',
   content: ''
 };

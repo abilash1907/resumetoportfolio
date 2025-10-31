@@ -1,13 +1,17 @@
-import { Box, Button, Tab } from "@mui/material";
-import { styles } from "../style";
-import React, { useState } from 'react';
+import { Editor } from "@monaco-editor/react";
 import TabContext from '@mui/lab/TabContext';
 import TabList from '@mui/lab/TabList';
 import TabPanel from '@mui/lab/TabPanel';
+import { Box, Button, Tab } from "@mui/material";
+import React, { useState } from 'react';
+import { generateWebsiteFromAi } from "../services/services";
+import { styles } from "../style";
 export default function Portfolio({ code, setCode }) {
   const [previewSrc, setPreviewSrc] = useState('');
   const [currentTab, setCurrentTab] = useState('content');
-
+  const [tabs, setTabs] = useState([{label:'Content',value:'content'}]);
+  const [loading, setLoading] = useState(false);
+  const [copied, setCopied] = useState(false);
   React.useEffect(() => {
     const srcDoc = `${code?.html}`;
     setPreviewSrc(srcDoc);
@@ -20,42 +24,74 @@ export default function Portfolio({ code, setCode }) {
       setCode({ ...code, [type]: e.target.value });
     }
   };
- const openInNewTab = () => {
+  const openInNewTab = () => {
     const blob = new Blob([previewSrc], { type: "text/html" });
     const url = URL.createObjectURL(blob);
     window.open(url, "_blank");
   };
+
+  const generateWebsite = async () => {
+    try {
+      if (code?.content) {
+        setCode(prev => ({
+          ...prev,
+          html: ''
+        }));
+        setLoading(true)
+        const res = await generateWebsiteFromAi(code?.content);
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder("utf-8");
+        // let done = false;
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value, { stream: true });
+
+          // Clean and parse SSE formatted data
+          const cleanText = chunk
+            .split("\n")
+            .filter((line) => line.startsWith("data:")) // only keep data lines
+            .map((line) => line.replace(/^data:\s?/, "").replace('```html',"").replace('```', "")) // remove "data:"
+            .join("\n");
+
+          if (cleanText.trim()) {
+            setCode(prev => ({
+              ...prev,
+              html: prev.html + cleanText + "\n"
+            }));
+          }
+        }
+        setTabs([{label:'Preview',value:'preview'},{label:'Code',value:'code'},...tabs])
+        setCurrentTab('preview')
+        setLoading(false);
+      }
+
+    } catch (error) {
+      console.log(error);
+      setLoading(false);
+    }
+  }
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(code.html);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1200); // Undo 'Copied!' after 1.2s
+    } catch (err) {
+      setCopied(false); // Could set to error state if needed
+    }
+  }
   return (
     <Box sx={{ width: '100%', typography: 'body1' }}>
+       {code?.content &&<Button onClick={generateWebsite} disabled={loading} > {loading ? "Generating..." : "Generate Website"}</Button>}
       <TabContext value={currentTab}>
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
           <TabList onChange={(e, type) => handleCodeChange(type, e)} aria-label="lab API tabs example">
-            <Tab label="Content" value="content" />
-            <Tab label="Preview" value="preview" />
-            <Tab label="Code" value="code" />
+            {tabs?.map(({label,value})=>{
+              return <Tab label={label} value={value} />
+            })}
           </TabList>
         </Box>
-        <TabPanel value="content">
-          {/* <pre style={{ background: '#f5f5f7', padding: 16, borderRadius: 6 }}>
-            {JSON.stringify(code?.json, null, 2)}
-          </pre> */}
-          <textarea
-            rows={6}
-            placeholder="File Content"
-            value={code.content}
-            onChange={(e) => handleCodeChange('content', e)}
-            style={styles.textArea}
-          />
-        </TabPanel>
-        <TabPanel value="code">
-          <textarea
-            rows={6}
-            placeholder="HTML code"
-            value={code.html}
-            onChange={(e) => handleCodeChange('html', e)}
-            style={styles.textArea}
-          />
-        </TabPanel>
         <TabPanel value="preview">
           <Button onClick={openInNewTab}>Open Preview in New Tab</Button>
           <iframe
@@ -63,6 +99,53 @@ export default function Portfolio({ code, setCode }) {
             srcDoc={previewSrc}
             style={styles.iframe}
             sandbox="allow-scripts allow-same-origin"
+          />
+        </TabPanel>
+        <TabPanel value="code">
+          <div style={{ position: "relative", borderRadius: "8px", overflow: "hidden" }}>
+            <Editor
+              options={{
+                fontSize: 14,
+                minimap: { enabled: false },
+                scrollBeyondLastLine: false,
+              }}
+              height="400px"
+              theme="vs-dark"
+              language="html"
+              defaultValue=''
+              value={code.html}
+              onChange={(value) => handleCodeChange('html', { target: { value } })}
+            />
+            <button
+              onClick={handleCopy}
+              style={{
+                position: "absolute",
+                top: "10px",
+                right: "10px",
+                background: "#2d2d2d",
+                color: "#fff",
+                border: "none",
+                padding: "6px 10px",
+                borderRadius: "6px",
+                cursor: "pointer",
+                fontSize: "13px",
+                opacity: 0.8,
+                transition: "opacity 0.2s",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.opacity = 1)}
+              onMouseLeave={(e) => (e.currentTarget.style.opacity = 0.8)}
+            >
+              📋 {copied ? "Copied!" : "Copy"}
+            </button>
+          </div>
+        </TabPanel>
+        <TabPanel value="content">
+          <textarea
+            rows={6}
+            placeholder="File Content"
+            value={code.content}
+            onChange={(e) => handleCodeChange('content', e)}
+            style={styles.textArea}
           />
         </TabPanel>
       </TabContext>

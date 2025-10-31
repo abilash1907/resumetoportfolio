@@ -1,18 +1,18 @@
 package com.api.portfolio_java_services.controller;
 
+import com.api.portfolio_java_services.model.Request;
+import com.api.portfolio_java_services.service.AIService;
 import com.api.portfolio_java_services.service.ContentExtractorService;
 import jakarta.validation.Valid;
-
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
+import reactor.core.publisher.Flux;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -26,6 +26,9 @@ public class PortfolioController {
 
     @Autowired
     private final ContentExtractorService contentExtractorService;
+    private final AIService aiService;
+
+
 
 
 //    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -40,5 +43,10 @@ public class PortfolioController {
         }else{
             return ResponseEntity.status(500).body(response);
         }
+    }
+
+    @PostMapping(value = "/generateWebsiteFromAi",consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<String> generateWebsiteFromAi(@RequestBody Request request) {
+        return aiService.generateWebsiteFromAI(request);
     }
 }

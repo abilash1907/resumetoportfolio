@@ -15,7 +15,7 @@ function App() {
   return (
     <div style={styles.container}>
       {/* Header */}
-      <NavBar/>
+      <NavBar code={code}/>
       {/* Upload Option */}
       <UploadResume code={code} setCode={setCode}/>
       {/* Code Editor and Preview Section */}

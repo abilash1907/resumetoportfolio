@@ -1,21 +1,26 @@
 import { Editor } from "@monaco-editor/react";
+import DescriptionIcon from '@mui/icons-material/Description';
+import LanguageSharpIcon from '@mui/icons-material/LanguageSharp';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import CodeIcon from '@mui/icons-material/Code';
 import TabContext from '@mui/lab/TabContext';
 import TabList from '@mui/lab/TabList';
 import TabPanel from '@mui/lab/TabPanel';
-import { Box, Button, Tab } from "@mui/material";
+import { Box, Button, LinearProgress, Stack, Tab } from "@mui/material";
 import React, { useState } from 'react';
 import { generateWebsiteFromAi } from "../services/services";
 import { styles } from "../style";
+import OpenInNewOutlinedIcon from '@mui/icons-material/OpenInNewOutlined';
 export default function Portfolio({ code, setCode }) {
   const [previewSrc, setPreviewSrc] = useState('');
   const [currentTab, setCurrentTab] = useState('content');
-  const [tabs, setTabs] = useState([{label:'Content',value:'content'}]);
+  const [tabs, setTabs] = useState([{ icon: <DescriptionIcon />, value: 'content' }]);
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   React.useEffect(() => {
     const srcDoc = `${code?.html}`;
     setPreviewSrc(srcDoc);
-  }, [code]);
+  }, [code?.html]);
 
   const handleCodeChange = (type, e) => {
     if (e.type === "click") {
@@ -52,7 +57,7 @@ export default function Portfolio({ code, setCode }) {
           const cleanText = chunk
             .split("\n")
             .filter((line) => line.startsWith("data:")) // only keep data lines
-            .map((line) => line.replace(/^data:\s?/, "").replace('```html',"").replace('```', "")) // remove "data:"
+            .map((line) => line.replace(/^data:\s?/, "").replace('```html', "").replace('```', "")) // remove "data:"
             .join("\n");
 
           if (cleanText.trim()) {
@@ -62,7 +67,7 @@ export default function Portfolio({ code, setCode }) {
             }));
           }
         }
-        setTabs([{label:'Preview',value:'preview'},{label:'Code',value:'code'},...tabs])
+        setTabs([{ icon: <VisibilityIcon />, value: 'preview' }, { icon: <CodeIcon />, value: 'code' }, ...tabs])
         setCurrentTab('preview')
         setLoading(false);
       }
@@ -83,17 +88,20 @@ export default function Portfolio({ code, setCode }) {
   }
   return (
     <Box sx={{ width: '100%', typography: 'body1' }}>
-       {code?.content &&<Button onClick={generateWebsite} disabled={loading} > {loading ? "Generating..." : "Generate Website"}</Button>}
-      <TabContext value={currentTab}>
+      {code?.content && <Button variant="outlined" startIcon={<LanguageSharpIcon />} style={{ color: 'rgb(35, 69, 103)' }} onClick={generateWebsite} disabled={loading} > {loading ? "Generating..." : "Generate Website"}</Button>}
+      <TabContext value={currentTab} >
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-          <TabList onChange={(e, type) => handleCodeChange(type, e)} aria-label="lab API tabs example">
-            {tabs?.map(({label,value})=>{
-              return <Tab label={label} value={value} />
+          <TabList onChange={(e, type) => handleCodeChange(type, e)} aria-label="lab API tabs example"
+            TabIndicatorProps={{ style: { backgroundColor: "rgb(35,69,103)" } }}
+          >
+            {tabs?.map(({ icon, value }) => {
+              return <Tab label={""} value={value} icon={icon} style={{ color: "rgb(35, 69, 103)" }} />
             })}
           </TabList>
+         { loading && <LinearProgress variant="indeterminate" color="inherit" />}
         </Box>
         <TabPanel value="preview">
-          <Button onClick={openInNewTab}>Open Preview in New Tab</Button>
+          <Button startIcon={<OpenInNewOutlinedIcon />} style={{ color: 'rgb(35, 69, 103)' }} onClick={openInNewTab}>Open Preview in New Tab</Button>
           <iframe
             title="Website Preview"
             srcDoc={previewSrc}

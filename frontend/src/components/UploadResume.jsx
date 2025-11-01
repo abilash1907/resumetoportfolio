@@ -2,6 +2,7 @@ import { useState } from "react";
 import { styles } from "../style";
 import { extractContent } from "../services/services";
 import { Button, CircularProgress } from "@mui/material";
+import FileUploadOutlinedIcon from '@mui/icons-material/FileUploadOutlined';
 export default function UploadResume({ code, setCode }) {//{ onData }
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -42,12 +43,14 @@ export default function UploadResume({ code, setCode }) {//{ onData }
         type="file"
         style={styles.fileInput}
         onChange={handleFileUpload}
+        accept=".pdf,.doc,.docx"
       />
        <Button
         variant="contained"
         color="primary"
         onClick={handleUpload}
         style={styles.uploadBtn}
+        startIcon={<FileUploadOutlinedIcon/>}
         endIcon={loading ? <CircularProgress size={20} color="inherit" /> : null}
         disabled={!file || loading}
       >

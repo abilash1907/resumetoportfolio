@@ -18,10 +18,28 @@ const extractContent = async (file) => {
         throw error
     }
 }
+const publishWebsite = async (siteId) => {
+    try {
+        
+        const res = await fetch(`${BASE_URL}/publishWebsite/${siteId}`, {
+            method: 'POST',
+             body: JSON.stringify({})
+        });
+        let result = await res?.json();
+        console.log(result,"res")
+        return result;
+    } catch (error) {
+        throw error
+    }
+}
 
 const generateWebsiteFromAi = async (content) => {
     try {
-        let prompt= `Analyze the given content getting from resume file and create a single-file solution for a professional and attractive modern static website based on the provided resume content using HTML,CSS and JS only in single file. The design uses a clean layout, modern typography, and a subtle color scheme. I need only code response from your side, no need any other explanation. Content : ${content}`
+        let prompt= `Analyze the given content getting from resume file and create a single-file solution for a professional and attractive complete modern personal portfolio website based on the provided resume content using HTML,CSS and JS only in single file. The design uses a clean layout, modern typography, and a subtle color scheme. I need only code response from your side, no need any other explanation. Content : ${content}`
+        // let prompt=` Convert the following resume text into a complete personal portfolio website.
+        //     Include HTML, CSS, and simple responsive layout.
+        //     Resume content: ${content}`
+
         let payload = {
             "model": "gpt-oss:120b-cloud",
             "messages": [
@@ -48,5 +66,6 @@ const generateWebsiteFromAi = async (content) => {
 
 export {
     extractContent,
-    generateWebsiteFromAi
+    generateWebsiteFromAi,
+    publishWebsite
 }

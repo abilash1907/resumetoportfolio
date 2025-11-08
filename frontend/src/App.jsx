@@ -6,16 +6,19 @@ import { styles } from './style';
 const initialCode = {
   html: '',
   preview: '',
-  content: ''
+  content: '',
+  json:{},
+  domainRes:{}
 };
 
 function App() {
   // const [file, setFile] = useState(null);
   const [code, setCode] = useState(initialCode);
+  const [siteId, setSiteId] = useState(null);
   return (
     <div style={styles.container}>
       {/* Header */}
-      <NavBar code={code}/>
+      <NavBar/>
       {/* Upload Option */}
       <UploadResume code={code} setCode={setCode}/>
       {/* Code Editor and Preview Section */}

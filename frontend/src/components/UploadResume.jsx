@@ -14,9 +14,7 @@ export default function UploadResume({ code, setCode }) {//{ onData }
       let res = await extractContent(file);
       console.log(res,"res")
       if(res){
-        setCode({...code,content:res?.content});
-      }else{
-        setCode({...code,json:{}});
+        setCode({...code,content:res?.content,json:res?.jsonContent?JSON.parse(res?.jsonContent):{}});
       }
     } catch (err) {
       console.log(err,"error");

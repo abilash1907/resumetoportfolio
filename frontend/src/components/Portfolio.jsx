@@ -14,7 +14,7 @@ import JsonView from "@uiw/react-json-view";
 import React, { useState } from 'react';
 import { generateWebsiteFromAi, publishWebsite } from "../services/services";
 import { styles } from "../style";
-export default function Portfolio({ code, setCode }) {
+export default function Portfolio({ code, setCode,setFile }) {
   const [previewSrc, setPreviewSrc] = useState('');
   const [currentTab, setCurrentTab] = useState('json');
   const [tabs, setTabs] = useState([{ icon: <DataObjectIcon />, value: 'json' }]);
@@ -105,10 +105,25 @@ export default function Portfolio({ code, setCode }) {
       if (!siteId) return;
       setLoading(true);
       let res = await publishWebsite(siteId);
-      setCode(prev => ({
-        ...prev,
-        domainRes: res || {}
-      }));
+      if(res?.status?.toUpperCase() === "SUCCESS"){
+        setCode(prev => ({
+          ...prev,
+          html: '',
+          preview: '',
+          content: '',
+          json: {},
+          domainRes: res || {}
+        }));
+        setSiteId(null);
+        setCurrentTab('json');
+        setTabs([{ icon: <DataObjectIcon />, value: 'json' }])
+        setFile(null)
+      }else{
+         setCode(prev => ({
+          ...prev,
+          domainRes: res || {}
+        }));
+      }
       setOpen(true)
       setLoading(false);
     } catch (err) {
@@ -220,11 +235,11 @@ export default function Portfolio({ code, setCode }) {
         maxWidth="md"
         fullWidth
       >
-        <DialogTitle sx={{ color:code?.domainRes?.status?.toUpperCase()==="SUCCESS"?"green":"red", fontWeight: "bold" }}>
+        <DialogTitle sx={{ color: code?.domainRes?.status?.toUpperCase() === "SUCCESS" ? "green" : "red", fontWeight: "bold" }}>
           {`Deployment is ${code?.domainRes?.status}`}
         </DialogTitle>
-
         <DialogContent dividers>
+          {loading && <LinearProgress variant="indeterminate" color="inherit" />}
           <Box
             sx={{
               maxHeight: "60vh",
@@ -243,8 +258,10 @@ export default function Portfolio({ code, setCode }) {
             />
           </Box>
         </DialogContent>
-
         <DialogActions>
+          {code?.domainRes?.status?.toUpperCase() === "FAILED"?<Button onClick={handleDeploy} variant="outlined" color="info">
+            Try Again
+          </Button>:<></>}
           <Button onClick={() => setOpen(false)} variant="outlined" color="secondary">
             Close
           </Button>

@@ -3,10 +3,8 @@ import { styles } from "../style";
 import { extractContent } from "../services/services";
 import { Button, CircularProgress } from "@mui/material";
 import FileUploadOutlinedIcon from '@mui/icons-material/FileUploadOutlined';
-export default function UploadResume({ code, setCode }) {//{ onData }
-  const [file, setFile] = useState(null);
+export default function UploadResume({ code, setCode,file,setFile }) {
   const [loading, setLoading] = useState(false);
-
   const handleUpload = async () => {
     try {
       if (!file) return;
@@ -26,14 +24,7 @@ export default function UploadResume({ code, setCode }) {//{ onData }
   const handleFileUpload =(e) => {
     const uploadedFile = e.target.files[0];
     setFile(uploadedFile);
-    // const reader = new FileReader();
-    // reader.onload = (ev) => {
-    //   setCode({ ...code, html: ev.target.result });
-    // };
-    // reader.readAsText(uploadedFile);
-    // console.log(reader,"reader")
   };
-
   return (
     <section style={styles.uploadSection}>
       <h3 style={styles.uploadTitle}>Upload Option</h3>
@@ -54,7 +45,6 @@ export default function UploadResume({ code, setCode }) {//{ onData }
       >
         {loading ? "Uploading..." : "Upload Resume"}
       </Button>
-      {/* <button style={styles.uploadBtn}disabled={!file || loading} onClick={handleUpload}> {loading ? "Uploading..." : "Upload Resume"}</button> */}
       <span style={styles.fileName}>{file ? file.name : 'No file chosen'}</span>
     </section>
   );

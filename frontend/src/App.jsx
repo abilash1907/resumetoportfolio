@@ -12,17 +12,16 @@ const initialCode = {
 };
 
 function App() {
-  // const [file, setFile] = useState(null);
+  const [file, setFile] = useState(null);
   const [code, setCode] = useState(initialCode);
-  const [siteId, setSiteId] = useState(null);
   return (
     <div style={styles.container}>
       {/* Header */}
       <NavBar/>
       {/* Upload Option */}
-      <UploadResume code={code} setCode={setCode}/>
+      <UploadResume code={code} setCode={setCode} file={file} setFile={setFile}/>
       {/* Code Editor and Preview Section */}
-      <Portfolio code={code} setCode={setCode}/>
+      <Portfolio code={code} setCode={setCode} setFile={setFile}/>
     </div>
   );
 }

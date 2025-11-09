@@ -3,12 +3,14 @@ package com.api.portfolio_java_services.service;
 
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
 import java.security.MessageDigest;
@@ -99,6 +101,7 @@ public class NetlifyDeployService {
                                 .retrieve()
                                 .toBodilessEntity()
                                 .block();
+                        FileUtils.deleteDirectory(new File(sitePath.toFile().getAbsolutePath()));
                         System.out.println("✅ Uploaded: " + path);
                     } else {
                         System.out.println("⚠️ Skipping non-regular or unreadable file: " + path);

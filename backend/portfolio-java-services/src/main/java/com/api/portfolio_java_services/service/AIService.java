@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -28,12 +29,13 @@ public class AIService {
     private final WebClient webClient;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-
+    @Value("${ollama.api.key}")
+    private String ollamaToken;
 
 
     public AIService() {
         this.webClient = WebClient.builder()
-                .baseUrl("http://localhost:11434")
+                .baseUrl("https://ollama.com")
                 .build();
 
     }
@@ -41,6 +43,7 @@ public class AIService {
     public Flux<String> generateWebsiteFromAI(Request request) {
         Mono<String> responseMono= webClient.post()
                 .uri("/api/chat")
+                .header("Authorization", "Bearer " + ollamaToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.TEXT_PLAIN)
                 .bodyValue(request)
@@ -106,6 +109,7 @@ public class AIService {
             // Call the AI model via Spring AI
             String response = webClient.post()
                     .uri("/api/chat")
+                    .header("Authorization", "Bearer " + ollamaToken)
                     .header("Content-Type", "application/json")
                     .bodyValue(requestBody)
                     .retrieve()
@@ -132,6 +136,7 @@ public class AIService {
             side, no need any other explanation.
             Content :
             """ + content;
+        log.info("prompt: {}",prompt);
         Map<String, Object> requestBody = Map.of(
                 "model", "gpt-oss:120b-cloud",
                 "messages", List.of(Map.of(
@@ -143,6 +148,7 @@ public class AIService {
         // Call the AI model via Spring AI
         String response = webClient.post()
                 .uri("/api/chat")
+                .header("Authorization", "Bearer " + ollamaToken)
                 .header("Content-Type", "application/json")
                 .bodyValue(requestBody)
                 .retrieve()

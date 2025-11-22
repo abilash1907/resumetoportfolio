@@ -1,6 +1,7 @@
 package com.api.portfolio_java_services.controller;
 
-import com.api.portfolio_java_services.model.Request;
+import com.api.portfolio_java_services.model.GenerateWebsiteRequest;
+import com.api.portfolio_java_services.model.GenerateWebsiteResponse;
 import com.api.portfolio_java_services.service.AIService;
 import com.api.portfolio_java_services.service.ContentExtractorService;
 import com.api.portfolio_java_services.service.NetlifyDeployService;
@@ -14,9 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import reactor.core.publisher.Flux;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -51,9 +50,9 @@ public class PortfolioController {
         }
     }
 
-    @PostMapping(value = "/generateWebsiteFromAi",consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Flux<String> generateWebsiteFromAi(@RequestBody Request request) {
-        return aiService.generateWebsiteFromAI(request);
+    @PostMapping(value = "/generateWebsiteFromAi",consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public GenerateWebsiteResponse generateWebsiteFromAi(@RequestBody GenerateWebsiteRequest generateWebsiteRequest) throws JsonProcessingException {
+        return aiService.generateWebsiteFromAI(generateWebsiteRequest);
     }
 
     @PostMapping("/publishWebsite/{siteId}")

@@ -4,6 +4,7 @@ package com.api.portfolio_java_services.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -22,11 +23,7 @@ import java.util.Map;
 @Service
 public class NetlifyDeployService {
 
-    private final WebClient webClient;
-
-
-
-
+    private final WebClient netlifyWebClient;
 
     @Value("${netlify.access.token}")
     private String netlifyToken;
@@ -35,10 +32,8 @@ public class NetlifyDeployService {
     private String generatedDir;
 
 
-    public NetlifyDeployService() {
-        this.webClient = WebClient.builder()
-                .baseUrl("https://api.netlify.com/api/v1")
-                .build();
+    public NetlifyDeployService(@Qualifier("netlifyWebClient") WebClient netlifyWebClient) {
+        this.netlifyWebClient = netlifyWebClient;
     }
 
     public String deploySite(String siteId, String domainName)  {
@@ -67,7 +62,7 @@ public class NetlifyDeployService {
 
             log.info("requestBody: {}", requestBody);
 
-            Map response = webClient.post()
+            Map response = netlifyWebClient.post()
                     .uri("/sites")
                     .header(HttpHeaders.AUTHORIZATION, "Bearer " + netlifyToken)
                     .contentType(MediaType.APPLICATION_JSON)
@@ -93,7 +88,7 @@ public class NetlifyDeployService {
                 try {
                     if (Files.isRegularFile(fullPath) && Files.isReadable(fullPath)) {
                         byte[] bytes = Files.readAllBytes(fullPath);
-                        webClient.put()
+                        netlifyWebClient.put()
                                 .uri("/deploys/" + deploy_id + "/files/" + path)
                                 .header("Authorization", "Bearer " + netlifyToken)
                                 .contentType(MediaType.APPLICATION_OCTET_STREAM)

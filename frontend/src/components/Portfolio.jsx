@@ -14,7 +14,7 @@ import JsonView from "@uiw/react-json-view";
 import React, { useState } from 'react';
 import { generateWebsiteFromAi, publishWebsite } from "../services/services";
 import { styles } from "../style";
-export default function Portfolio({ code, setCode,setFile }) {
+export default function Portfolio({ code, setCode, setFile }) {
   const [previewSrc, setPreviewSrc] = useState('');
   const [currentTab, setCurrentTab] = useState('json');
   const [tabs, setTabs] = useState([{ icon: <DataObjectIcon />, value: 'json' }]);
@@ -52,40 +52,20 @@ export default function Portfolio({ code, setCode,setFile }) {
         }));
         setCurrentTab('json')
         setLoading(true)
-        const res = await generateWebsiteFromAi(code?.content);
-        const reader = res.body.getReader();
-        const decoder = new TextDecoder("utf-8");
-        // let done = false;
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-
-          const chunk = decoder.decode(value, { stream: true });
-          const match = chunk.match(/siteId=([a-f0-9\-]+)/);
-          const siteId = match ? match[1] : null;
-          if (siteId) setSiteId(siteId);
-          // Clean and parse SSE formatted data
-          const cleanText = chunk
-            .split("\n")
-            .filter((line) => line.startsWith("data:")) // only keep data lines
-            .map((line) => line.replace(/^data:\s?/, "").replace('```html', "").replace('```', "").replace(/siteId=([a-f0-9\-]+)/, "")) // remove "data:"
-            .join("\n");
-
-          if (cleanText.trim()) {
-            setCode(prev => ({
-              ...prev,
-              html: prev.html + cleanText + "\n"
-            }));
+        let res = await generateWebsiteFromAi(code?.content);
+        if (res) {
+          setCode(prev => ({
+            ...prev,
+            html: res?.htmlContent
+          }));
+          setSiteId(res?.siteId)
+          if (!tabs.some(tab => tab.value === 'preview')) {
+            setTabs([{ icon: <VisibilityIcon />, value: 'preview' }, { icon: <CodeIcon />, value: 'code' }, ...tabs])
           }
-
+          setCurrentTab('preview')
         }
-        if (!tabs.some(tab => tab.value === 'preview')) {
-          setTabs([{ icon: <VisibilityIcon />, value: 'preview' }, { icon: <CodeIcon />, value: 'code' }, ...tabs])
-        }
-        setCurrentTab('preview')
         setLoading(false);
       }
-
     } catch (error) {
       console.log(error);
       setLoading(false);
@@ -105,7 +85,7 @@ export default function Portfolio({ code, setCode,setFile }) {
       if (!siteId) return;
       setLoading(true);
       let res = await publishWebsite(siteId);
-      if(res?.status?.toUpperCase() === "SUCCESS"){
+      if (res?.status?.toUpperCase() === "SUCCESS") {
         setCode(prev => ({
           ...prev,
           html: '',
@@ -118,8 +98,8 @@ export default function Portfolio({ code, setCode,setFile }) {
         setCurrentTab('json');
         setTabs([{ icon: <DataObjectIcon />, value: 'json' }])
         setFile(null)
-      }else{
-         setCode(prev => ({
+      } else {
+        setCode(prev => ({
           ...prev,
           domainRes: res || {}
         }));
@@ -259,9 +239,9 @@ export default function Portfolio({ code, setCode,setFile }) {
           </Box>
         </DialogContent>
         <DialogActions>
-          {code?.domainRes?.status?.toUpperCase() === "FAILED"?<Button onClick={handleDeploy} variant="outlined" color="info">
+          {code?.domainRes?.status?.toUpperCase() === "FAILED" ? <Button onClick={handleDeploy} variant="outlined" color="info">
             Try Again
-          </Button>:<></>}
+          </Button> : <></>}
           <Button onClick={() => setOpen(false)} variant="outlined" color="secondary">
             Close
           </Button>
